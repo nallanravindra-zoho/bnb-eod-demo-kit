@@ -1,0 +1,24 @@
+flowchart LR
+  subgraph India["AWS Mumbai Region (ap-south-1) — data stays in India"]
+    direction LR
+    subgraph VPC["Custom VPC · 2 Availability Zones"]
+      ALB["Application<br/>Load Balancer"] --> ASG["Auto Scaling Group<br/>Branch EOD Portal<br/>(private subnets)"]
+    end
+    IN[("S3: incoming<br/>KMS-encrypted")] -- "upload event" --> L["Lambda<br/>EOD Processor<br/>₹ threshold rule"]
+    SM["Secrets Manager<br/>compliance API key"] -.-> L
+    L --> OUT[("S3: processed<br/>summary · compliance-review · rejected")]
+    L --> CW["CloudWatch Logs"]
+    subgraph CICD["CI/CD"]
+      GH["GitHub"] --> CB["CodeBuild<br/>unit tests"] --> AP{"Manual<br/>Approval"} --> DP["CodeBuild<br/>deploy"]
+    end
+    DP -- "update code" --> L
+    subgraph SEC["Security & Audit"]
+      KMS["KMS CMK"]
+      CT["CloudTrail"]
+      GD["GuardDuty"]
+    end
+  end
+  B["Branch users"] --> ALB
+  B -. "EOD file" .-> IN
+  TF["Terraform + CloudFormation"] -. "builds everything" .-> India
+  AUD["Branch auditor<br/>(read-only)"] -. "read" .-> OUT

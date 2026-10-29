@@ -1,0 +1,11 @@
+# Stage 4 of the pipeline (runs only after Manual Approval):
+# deploy the tested package to the production Lambda and publish a new version.
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - echo "=== Deploying approved change to $FUNCTION_NAME ==="
+      - aws lambda update-function-code --function-name "$FUNCTION_NAME" --zip-file fileb://lambda.zip --publish --query '{Version:Version,LastModified:LastModified}' --output table
+      - aws lambda wait function-updated --function-name "$FUNCTION_NAME"
+      - echo "=== Deployment complete. New compliance rule is live. ==="

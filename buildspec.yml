@@ -1,0 +1,19 @@
+# Stage 2 of the pipeline: run compliance unit tests, then package the Lambda.
+# If ANY test fails, this stage fails and nothing reaches production.
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "=== Bharat National Bank | Compliance rule unit tests ==="
+      - PYTHONPATH=lambda python3 -m unittest discover -s tests -v
+  build:
+    commands:
+      - echo "=== Packaging Lambda ==="
+      - (cd lambda && zip -qr ../lambda.zip . -x '*__pycache__*')
+      - ls -l lambda.zip
+
+artifacts:
+  files:
+    - lambda.zip
+    - buildspec-deploy.yml
