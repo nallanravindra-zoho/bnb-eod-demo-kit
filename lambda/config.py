@@ -9,4 +9,4 @@ Python allows underscores in numbers, so Indian digit grouping works:
 """
 
 # Transactions at or above this amount (INR) are sent for compliance review.
-THRESHOLD_INR = 10_00_000
+THRESHOLD_INR = 5_00_000
